@@ -53,38 +53,12 @@ def check_volume_spike():
             print(f"{symbol} 沒有爆量 ({last_volume:.2f} / {avg_volume:.2f})")
 
 # 天氣推播邏輯（每天 17:18 發送）
-def send_weather():
-    print("[任務啟動] 準備發送天氣通知...", datetime.datetime.now())
-    try:
-        url = "https://api.openweathermap.org/data/2.5/forecast"
-        params = {
-            "q": "Taipei,tw",
-            "appid": "c773b353a06ad4811676f075042f344a",
-            "units": "metric",
-            "lang": "zh_tw"
-        }
-        res = requests.get(url, params=params)
-        data = res.json()
 
-        if "list" in data:
-            forecast = data["list"][0]  # 最近一筆預報資料
-            temp_min = forecast["main"]["temp_min"]
-            temp_max = forecast["main"]["temp_max"]
-            pop = forecast.get("pop", 0) * 100  # 降雨機率（0~1）→ 百分比
-
-            msg = f"📍 台北市今日天氣提醒
-降雨機率：{pop:.0f}%
-氣溫：{temp_min:.0f}°C - {temp_max:.0f}°C"
-            line_bot_api.push_message(user_id, TextSendMessage(text=msg))
-        else:
-            print("⚠️ 無法解析 OpenWeather 回傳格式")
-    except Exception as e:
-        print("天氣推播失敗：", e)
 
 # 啟動 APScheduler 定時任務
 scheduler = BackgroundScheduler()
 scheduler.add_job(check_volume_spike, 'interval', minutes=15)
-scheduler.add_job(send_weather, 'cron', hour=17, minute=18)
+
 scheduler.start()
 
 # 上傳圖片並辨識幣種
@@ -118,10 +92,7 @@ async def upload_image(file: UploadFile = File(...)):
     return {"tracked_symbols": final_symbols}
 
 # 手動觸發天氣推播
-@app.get("/test-weather")
-async def test_weather():
-    send_weather()
-    return {"message": "已手動執行天氣推播"}
+
 
 # 手動測試爆量邏輯
 @app.get("/ping")
@@ -153,4 +124,3 @@ async def webhook(request: Request):
         print("Webhook 發生錯誤：", e)
 
     return JSONResponse(content={"message": "OK"})
-
