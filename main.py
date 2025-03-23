@@ -24,12 +24,12 @@ def load_symbols():
     with open("symbols.txt", "r") as f:
         return [line.strip() for line in f.readlines() if line.strip()]
 
-# 偵測爆量下殺邏輯
+# 偵測爆量下殺邏輯（改為查 Futures 資料）
 def check_volume_spike():
     print("[任務啟動] 開始檢查幣種成交量...", datetime.datetime.now())
     symbols_to_track = load_symbols()
     for symbol in symbols_to_track:
-        url = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval=15m&limit=11"
+        url = f"https://fapi.binance.com/fapi/v1/klines?symbol={symbol}&interval=15m&limit=11"
         response = requests.get(url)
         if response.status_code != 200:
             print(f"無法取得 {symbol} 的資料")
@@ -40,9 +40,8 @@ def check_volume_spike():
         last_volume = volumes[-1]
         avg_volume = sum(volumes[:-1]) / 10
 
-        # 價格跌幅計算
-        last_close = float(klines[-1][4])  # 最後一根的收盤價
-        last_open = float(klines[-1][1])   # 最後一根的開盤價
+        last_close = float(klines[-1][4])  # 收盤價
+        last_open = float(klines[-1][1])   # 開盤價
         price_drop_pct = ((last_open - last_close) / last_open) * 100
 
         if last_volume > avg_volume * 3:
@@ -52,16 +51,12 @@ def check_volume_spike():
         else:
             print(f"{symbol} 沒有爆量 ({last_volume:.2f} / {avg_volume:.2f})")
 
-# 天氣推播邏輯（每天 17:18 發送）
-
-
-# 啟動 APScheduler 定時任務
+# 啟動定時任務
 scheduler = BackgroundScheduler()
 scheduler.add_job(check_volume_spike, 'interval', minutes=15)
-
 scheduler.start()
 
-# 上傳圖片並辨識幣種
+# 上傳圖片辨識幣種
 @app.post("/upload")
 async def upload_image(file: UploadFile = File(...)):
     file_location = f"temp_{file.filename}"
@@ -80,7 +75,6 @@ async def upload_image(file: UploadFile = File(...)):
             if part.isalpha() and len(part) <= 6:
                 symbols.append(part.upper())
 
-    # 加上 BTC 和 ETH
     final_symbols = list(set([s + "USDT" for s in symbols if len(s) >= 2]))
     final_symbols.extend(["BTCUSDT", "ETHUSDT"])
     final_symbols = list(set(final_symbols))
@@ -91,15 +85,13 @@ async def upload_image(file: UploadFile = File(...)):
 
     return {"tracked_symbols": final_symbols}
 
-# 手動觸發天氣推播
-
-
-# 手動測試爆量邏輯
+# 測試 LINE 推播
 @app.get("/ping")
 async def ping():
     line_bot_api.push_message(user_id, TextSendMessage(text="✅ 測試成功！LINE 推播正常！"))
     return {"message": "通知已送出"}
 
+# 手動測試爆量
 @app.get("/test-volume")
 async def test_volume():
     check_volume_spike()
