@@ -56,20 +56,28 @@ def check_volume_spike():
 def send_weather():
     print("[任務啟動] 準備發送天氣通知...", datetime.datetime.now())
     try:
-        url = "https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-C0032-001"
+        url = "https://api.openweathermap.org/data/2.5/forecast"
         params = {
-            "Authorization": os.getenv("CWB_API_KEY"),
-            "locationName": "台北市"
+            "q": "Taipei,tw",
+            "appid": "c773b353a06ad4811676f075042f344a",
+            "units": "metric",
+            "lang": "zh_tw"
         }
         res = requests.get(url, params=params)
         data = res.json()
-        if "records" in data:
-            element = data["records"]["location"][0]["weatherElement"]
-            rain = element[0]["time"][0]["parameter"]["parameterName"]
-            minT = element[2]["time"][0]["parameter"]["parameterName"]
-            maxT = element[4]["time"][0]["parameter"]["parameterName"]
-            msg = f"📍 台北市今日天氣提醒\n降雨機率：{rain}%\n氣溫：{minT}°C - {maxT}°C"
-            line_bot_api.push_message(user_id, TextSendMessage(text=msg))
+
+        # 取出今日最近一筆的資料（預報是每 3 小時一筆）
+        forecast = data["list"][0]  # 最近一筆預報資料
+        temp_min = forecast["main"]["temp_min"]
+        temp_max = forecast["main"]["temp_max"]
+        pop = forecast.get("pop", 0) * 100  # 降雨機率是 0~1，乘 100 變成百分比
+
+        msg = f"📍 台北市今日天氣提醒
+降雨機率：{pop:.0f}%
+氣溫：{temp_min:.0f}°C - {temp_max:.0f}°C"
+        line_bot_api.push_message(user_id, TextSendMessage(text=msg))
+    except Exception as e:
+        print("天氣推播失敗：", e)
         else:
             print("⚠️ 無法解析氣象資料")
     except Exception as e:
@@ -136,4 +144,3 @@ async def webhook(request: Request):
         print("Webhook 發生錯誤：", e)
 
     return JSONResponse(content={"message": "OK"})
-    
