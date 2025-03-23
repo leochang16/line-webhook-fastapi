@@ -52,7 +52,7 @@ def check_volume_spike():
         else:
             print(f"{symbol} 沒有爆量 ({last_volume:.2f} / {avg_volume:.2f})")
 
-# 天氣推播邏輯（每天 17:10 發送）
+# 天氣推播邏輯（每天 17:18 發送）
 def send_weather():
     print("[任務啟動] 準備發送天氣通知...", datetime.datetime.now())
     try:
@@ -111,6 +111,12 @@ async def upload_image(file: UploadFile = File(...)):
 
     return {"tracked_symbols": final_symbols}
 
+# 手動觸發天氣推播
+@app.get("/test-weather")
+async def test_weather():
+    send_weather()
+    return {"message": "已手動執行天氣推播"}
+
 # LINE Webhook 端點
 @app.post("/webhook")
 async def webhook(request: Request):
@@ -130,4 +136,4 @@ async def webhook(request: Request):
         print("Webhook 發生錯誤：", e)
 
     return JSONResponse(content={"message": "OK"})
-
+    
