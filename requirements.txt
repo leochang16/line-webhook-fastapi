@@ -5,3 +5,4 @@ apscheduler
 pytesseract
 Pillow
 requests
+python-multipart
