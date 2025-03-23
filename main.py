@@ -69,7 +69,7 @@ def send_weather():
         if "list" in data:
             forecast = data["list"][0]  # 最近一筆預報資料
             temp_min = forecast["main"]["temp_min"]
-            temp_max = forecast["main"]["main"]["temp_max"]
+            temp_max = forecast["main"]["temp_max"]
             pop = forecast.get("pop", 0) * 100  # 降雨機率（0~1）→ 百分比
 
             msg = f"📍 台北市今日天氣提醒
@@ -78,12 +78,6 @@ def send_weather():
             line_bot_api.push_message(user_id, TextSendMessage(text=msg))
         else:
             print("⚠️ 無法解析 OpenWeather 回傳格式")
-    except Exception as e:
-        print("天氣推播失敗：", e)
-    except Exception as e:
-        print("天氣推播失敗：", e)
-        else:
-            print("⚠️ 無法解析氣象資料")
     except Exception as e:
         print("天氣推播失敗：", e)
 
@@ -129,6 +123,12 @@ async def test_weather():
     send_weather()
     return {"message": "已手動執行天氣推播"}
 
+# 手動測試爆量邏輯
+@app.get("/test-volume")
+async def test_volume():
+    check_volume_spike()
+    return {"message": "已手動執行爆量檢查"}
+
 # LINE Webhook 端點
 @app.post("/webhook")
 async def webhook(request: Request):
@@ -148,4 +148,3 @@ async def webhook(request: Request):
         print("Webhook 發生錯誤：", e)
 
     return JSONResponse(content={"message": "OK"})
-
