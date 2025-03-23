@@ -1,8 +1,8 @@
-fastapi
-uvicorn
-line-bot-sdk
-requests
-apscheduler
-python-multipart
-pillow
-pytesseract
+fastapi==0.110.0
+uvicorn==0.27.1
+line-bot-sdk==3.4.0
+requests==2.31.0
+apscheduler==3.10.4
+python-multipart==0.0.9
+pillow==10.2.0
+pytesseract==0.3.10
