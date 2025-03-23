@@ -74,7 +74,7 @@ def send_weather():
 
             msg = f"📍 台北市今日天氣提醒
 降雨機率：{pop:.0f}%
-氣溫：{temp_min:.0f}°C - {temp_max:.0f}°C"
+氣溫：{temp_min:.0f}°C - {temp_max:.0f}°C""
             line_bot_api.push_message(user_id, TextSendMessage(text=msg))
         else:
             print("⚠️ 無法解析 OpenWeather 回傳格式")
