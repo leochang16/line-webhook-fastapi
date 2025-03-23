@@ -40,9 +40,14 @@ def check_volume_spike():
         last_volume = volumes[-1]
         avg_volume = sum(volumes[:-1]) / 10
 
+        # 價格跌幅計算
+        last_close = float(klines[-1][4])  # 最後一根的收盤價
+        last_open = float(klines[-1][1])   # 最後一根的開盤價
+        price_drop_pct = ((last_open - last_close) / last_open) * 100
+
         if last_volume > avg_volume * 3:
             print(f"⚠️ 爆量：{symbol} 最新成交量 {last_volume:.2f}，大於平均 {avg_volume:.2f}")
-            message = f"🚨 爆量下殺警報：{symbol}\n最新成交量：{last_volume:.2f}\n平均成交量：{avg_volume:.2f}"
+            message = f"🚨🚨🚨: {symbol}\n下跌幅度: {price_drop_pct:.2f}%"
             line_bot_api.push_message(user_id, TextSendMessage(text=message))
         else:
             print(f"{symbol} 沒有爆量 ({last_volume:.2f} / {avg_volume:.2f})")
