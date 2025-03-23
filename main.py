@@ -52,17 +52,9 @@ def check_volume_spike():
         else:
             print(f"{symbol} 沒有爆量 ({last_volume:.2f} / {avg_volume:.2f})")
 
-# 天氣推播邏輯（每天 17:18 發送）
-
-        else:
-            print("⚠️ 無法解析 OpenWeather 回傳格式")
-    except Exception as e:
-        print("天氣推播失敗：", e)
-
 # 啟動 APScheduler 定時任務
 scheduler = BackgroundScheduler()
 scheduler.add_job(check_volume_spike, 'interval', minutes=15)
-
 scheduler.start()
 
 # 上傳圖片並辨識幣種
@@ -94,12 +86,6 @@ async def upload_image(file: UploadFile = File(...)):
             f.write(sym + "\n")
 
     return {"tracked_symbols": final_symbols}
-
-# 手動觸發天氣推播
-
-async def test_weather():
-    send_weather()
-    return {"message": "已手動執行天氣推播"}
 
 # 手動測試爆量邏輯
 @app.get("/test-volume")
