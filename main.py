@@ -7,8 +7,8 @@ import os
 app = FastAPI()
 
 # 用你的 LINE Access Token & Secret，放在 Render 的環境變數
-line_bot_api = LineBotApi(os.getenv("BlBltEYqeTSJgswfQV2fHPdG8qrd7o1pgGuOsCQui22JZ6nRwYOp4ViqXPcOVdV76tCAAijz4lpT/ZM5trYbvAfOMkM8a1VIZZJYQd1saF5a53S6m5Lw0+nt2GJTDkak0xUGjPDN2/vSPvLGbCmIdAdB04t89/1O/w1cDnyilFU="))
-parser = WebhookParser(os.getenv("d663a339be4145ec663a312dea25c5b1"))
+line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
+parser = WebhookParser(os.getenv("LINE_CHANNEL_SECRET"))
 
 @app.post("/webhook")
 async def webhook(request: Request):
