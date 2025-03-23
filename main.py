@@ -66,13 +66,18 @@ def send_weather():
         res = requests.get(url, params=params)
         data = res.json()
 
-        forecast = data["list"][0]  # 最近一筆預報資料
-        temp_min = forecast["main"]["temp_min"]
-        temp_max = forecast["main"]["temp_max"]
-        pop = forecast.get("pop", 0) * 100  # 降雨機率（0~1）→ 百分比
+        if "list" in data:
+            forecast = data["list"][0]  # 最近一筆預報資料
+            temp_min = forecast["main"]["temp_min"]
+            temp_max = forecast["main"]["main"]["temp_max"]
+            pop = forecast.get("pop", 0) * 100  # 降雨機率（0~1）→ 百分比
 
-        msg = f"📍 台北市今日天氣提醒\n降雨機率：{pop:.0f}%\n氣溫：{temp_min:.0f}°C - {temp_max:.0f}°C"
-        line_bot_api.push_message(user_id, TextSendMessage(text=msg))
+            msg = f"📍 台北市今日天氣提醒
+降雨機率：{pop:.0f}%
+氣溫：{temp_min:.0f}°C - {temp_max:.0f}°C"
+            line_bot_api.push_message(user_id, TextSendMessage(text=msg))
+        else:
+            print("⚠️ 無法解析 OpenWeather 回傳格式")
     except Exception as e:
         print("天氣推播失敗：", e)
     except Exception as e:
@@ -143,3 +148,4 @@ async def webhook(request: Request):
         print("Webhook 發生錯誤：", e)
 
     return JSONResponse(content={"message": "OK"})
+
