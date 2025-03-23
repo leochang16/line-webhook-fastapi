@@ -1,8 +1,8 @@
 fastapi
 uvicorn
 python-multipart
-line-bot-sdk
-apscheduler
-pytesseract
 pillow
+pytesseract
 requests
+apscheduler
+line-bot-sdk
