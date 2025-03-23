@@ -52,9 +52,33 @@ def check_volume_spike():
         else:
             print(f"{symbol} 沒有爆量 ({last_volume:.2f} / {avg_volume:.2f})")
 
+# 天氣推播邏輯（每天 17:10 發送）
+def send_weather():
+    print("[任務啟動] 準備發送天氣通知...", datetime.datetime.now())
+    try:
+        url = "https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-C0032-001"
+        params = {
+            "Authorization": os.getenv("CWB_API_KEY"),
+            "locationName": "台北市"
+        }
+        res = requests.get(url, params=params)
+        data = res.json()
+        if "records" in data:
+            element = data["records"]["location"][0]["weatherElement"]
+            rain = element[0]["time"][0]["parameter"]["parameterName"]
+            minT = element[2]["time"][0]["parameter"]["parameterName"]
+            maxT = element[4]["time"][0]["parameter"]["parameterName"]
+            msg = f"📍 台北市今日天氣提醒\n降雨機率：{rain}%\n氣溫：{minT}°C - {maxT}°C"
+            line_bot_api.push_message(user_id, TextSendMessage(text=msg))
+        else:
+            print("⚠️ 無法解析氣象資料")
+    except Exception as e:
+        print("天氣推播失敗：", e)
+
 # 啟動 APScheduler 定時任務
 scheduler = BackgroundScheduler()
 scheduler.add_job(check_volume_spike, 'interval', minutes=15)
+scheduler.add_job(send_weather, 'cron', hour=17, minute=18)
 scheduler.start()
 
 # 上傳圖片並辨識幣種
@@ -106,3 +130,4 @@ async def webhook(request: Request):
         print("Webhook 發生錯誤：", e)
 
     return JSONResponse(content={"message": "OK"})
+
